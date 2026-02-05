@@ -26,4 +26,11 @@ package object build:
       end jdk
     end temurin
   end adoptium
+  object xuxueli:
+    object `xxl-job`:
+      // https://github.com/xuxueli/xxl-job/releases/
+      val version: String = "3.3.2"
+      val tablesXxlJobSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/xuxueli/xxl-job/refs/tags/$version/doc/db/tables_xxl_job.sql")
+    end `xxl-job`
+  end xuxueli
 end build
