@@ -1,6 +1,7 @@
 package com.peknight.app
 
 import org.http4s.Uri
+import org.http4s.syntax.literals.uri
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -33,4 +34,18 @@ package object build:
       val tablesXxlJobSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/xuxueli/xxl-job/refs/tags/$version/doc/db/tables_xxl_job.sql")
     end `xxl-job`
   end xuxueli
+  object mojang:
+    object minecraft:
+      object java:
+        // https://www.minecraft.net/en-us/download/server
+        val version: String = "1.21.11"
+        val url: Uri = uri"https://piston-data.mojang.com/v1/objects/64bb6d763bed0a9f1d632ec347938594144943ed/server.jar"
+      end java
+      object bedrock:
+        // https://www.minecraft.net/en-us/download/server/bedrock
+        val version: String = "1.21.132.3"
+        val url: Uri = Uri.unsafeFromString(s"https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-$version.zip")
+      end bedrock
+    end minecraft
+  end mojang
 end build
