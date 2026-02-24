@@ -1,6 +1,7 @@
 package com.peknight.app
 
 import com.peknight.build.gav
+import fs2.io.file.Path
 import org.http4s.Uri
 import org.http4s.syntax.literals.uri
 
@@ -18,7 +19,8 @@ package object build:
       object x64:
         // https://nodejs.org/en/download/current
         val version: String = "25.6.1"
-        val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/node-v$version-linux-x64.tar.xz")
+        val directory: Path = Path(s"node-v$version-linux-x64")
+        val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/$directory.tar.xz")
       end x64
     end linux
   end node
