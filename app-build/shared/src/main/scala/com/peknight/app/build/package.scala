@@ -1,5 +1,6 @@
 package com.peknight.app
 
+import com.peknight.build.gav
 import org.http4s.Uri
 import org.http4s.syntax.literals.uri
 
@@ -7,6 +8,20 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 package object build:
+  object sbt:
+    // https://www.scala-sbt.org/download/
+    val version: String = gav.sbtScala.version
+    val url: Uri = Uri.unsafeFromString(s"https://github.com/sbt/sbt/releases/download/v$version/sbt-$version.tgz")
+  end sbt
+  object node:
+    object linux:
+      object x64:
+        // https://nodejs.org/en/download/current
+        val version: String = "25.6.1"
+        val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/node-v$version-linux-x64.tar.xz")
+      end x64
+    end linux
+  end node
   object fatedier:
     object frp:
       // https://github.com/fatedier/frp/releases/

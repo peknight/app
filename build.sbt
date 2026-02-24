@@ -18,4 +18,7 @@ lazy val appCore = (crossProject(JVMPlatform, JSPlatform, NativePlatform) in fil
 
 lazy val appBuild = (crossProject(JVMPlatform, JSPlatform) in file("app-build"))
   .settings(name := "app-build")
-  .settings(crossDependencies(http4s))
+  .settings(crossDependencies(
+      http4s,
+      peknight.build.gav,
+  ))
