@@ -18,7 +18,7 @@ package object build:
     object linux:
       object x64:
         // https://nodejs.org/en/download/current
-        val version: String = "25.6.1"
+        val version: String = "25.7.0"
         val directory: Path = Path(s"node-v$version-linux-x64")
         val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/$directory.tar.xz")
       end x64
