@@ -60,7 +60,7 @@ package object build:
       end java
       object bedrock:
         // https://www.minecraft.net/en-us/download/server/bedrock
-        val version: String = "1.26.1.1"
+        val version: String = "1.26.2.1"
         val url: Uri = Uri.unsafeFromString(s"https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-$version.zip")
       end bedrock
     end minecraft
