@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets
 
 package object build:
   object sbt:
-    // https://www.scala-sbt.org/download/
+    // https://github.com/sbt/sbt/releases
     val version: String = gav.sbtScala.version
     val url: Uri = Uri.unsafeFromString(s"https://github.com/sbt/sbt/releases/download/v$version/sbt-$version.tgz")
   end sbt
@@ -18,7 +18,7 @@ package object build:
     object linux:
       object x64:
         // https://nodejs.org/en/download/current
-        val version: String = "25.8.0"
+        val version: String = "25.8.1"
         val directory: Path = Path(s"node-v$version-linux-x64")
         val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/$directory.tar.xz")
       end x64
