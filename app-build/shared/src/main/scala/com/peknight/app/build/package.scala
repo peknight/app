@@ -33,6 +33,7 @@ package object build:
   end fatedier
   object adoptium:
     object temurin:
+      // https://github.com/adoptium/temurin26-binaries/releases/
       // https://github.com/adoptium/temurin25-binaries/releases/
       object jdk:
         object x64:
