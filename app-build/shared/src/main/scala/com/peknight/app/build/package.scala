@@ -18,7 +18,7 @@ package object build:
     object linux:
       object x64:
         // https://nodejs.org/en/download/current
-        val version: String = "25.8.1"
+        val version: String = "25.8.2"
         val directory: Path = Path(s"node-v$version-linux-x64")
         val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/$directory.tar.xz")
       end x64
@@ -27,19 +27,18 @@ package object build:
   object fatedier:
     object frp:
       // https://github.com/fatedier/frp/releases/
-      val version: String = "0.67.0"
+      val version: String = "0.68.0"
       val url: Uri = Uri.unsafeFromString(s"https://github.com/fatedier/frp/releases/download/v$version/frp_${version}_linux_amd64.tar.gz")
     end frp
   end fatedier
   object adoptium:
     object temurin:
       // https://github.com/adoptium/temurin26-binaries/releases/
-      // https://github.com/adoptium/temurin25-binaries/releases/
       object jdk:
         object x64:
           object linux:
-            val version: String = "25.0.2_10"
-            val url: Uri = Uri.unsafeFromString(s"https://github.com/adoptium/temurin25-binaries/releases/download/jdk-${URLEncoder.encode(version.replace('_', '+'), StandardCharsets.UTF_8)}/OpenJDK25U-jdk_x64_linux_hotspot_$version.tar.gz")
+            val version: String = "26_35"
+            val url: Uri = Uri.unsafeFromString(s"https://github.com/adoptium/temurin26-binaries/releases/download/jdk-${URLEncoder.encode(version.replace('_', '+'), StandardCharsets.UTF_8)}/OpenJDK26U-jdk_x64_linux_hotspot_$version.tar.gz")
           end linux
         end x64
       end jdk
@@ -56,12 +55,12 @@ package object build:
     object minecraft:
       object java:
         // https://www.minecraft.net/en-us/download/server
-        val version: String = "1.21.11"
-        val url: Uri = uri"https://piston-data.mojang.com/v1/objects/64bb6d763bed0a9f1d632ec347938594144943ed/server.jar"
+        val version: String = "26.1"
+        val url: Uri = uri"https://piston-data.mojang.com/v1/objects/3872a7f07a1a595e651aef8b058dfc2bb3772f46/server.jar"
       end java
       object bedrock:
         // https://www.minecraft.net/en-us/download/server/bedrock
-        val version: String = "1.26.3.1"
+        val version: String = "1.26.12.2"
         val url: Uri = Uri.unsafeFromString(s"https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-$version.zip")
       end bedrock
     end minecraft
