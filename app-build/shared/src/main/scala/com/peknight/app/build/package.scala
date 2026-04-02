@@ -55,8 +55,8 @@ package object build:
     object minecraft:
       object java:
         // https://www.minecraft.net/en-us/download/server
-        val version: String = "26.1"
-        val url: Uri = uri"https://piston-data.mojang.com/v1/objects/3872a7f07a1a595e651aef8b058dfc2bb3772f46/server.jar"
+        val version: String = "26.1.1"
+        val url: Uri = uri"https://piston-data.mojang.com/v1/objects/49c8195703ad0ba4f0a4efbccfd85a4a8ca57431/server.jar"
       end java
       object bedrock:
         // https://www.minecraft.net/en-us/download/server/bedrock
