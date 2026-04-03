@@ -54,9 +54,9 @@ package object build:
   object apolloconfig:
     object apollo:
       // https://github.com/apolloconfig/apollo/releases/
-      val version: String = "v2.5.1"
-      val apolloPortalDbSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/apolloconfig/apollo/refs/tags/$version/scripts/sql/profiles/mysql-default/apolloportaldb.sql")
-      val apolloConfigDbSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/apolloconfig/apollo/refs/tags/$version/scripts/sql/profiles/mysql-default/apolloconfigdb.sql")
+      val version: String = "2.5.1"
+      val apolloPortalDbSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/apolloconfig/apollo/refs/tags/v$version/scripts/sql/profiles/mysql-default/apolloportaldb.sql")
+      val apolloConfigDbSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/apolloconfig/apollo/refs/tags/v$version/scripts/sql/profiles/mysql-default/apolloconfigdb.sql")
     end apollo
   end apolloconfig
   object mojang:
