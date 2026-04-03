@@ -9,6 +9,19 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 package object build:
+  object adoptium:
+    object temurin:
+      // https://github.com/adoptium/temurin26-binaries/releases/
+      object jdk:
+        object x64:
+          object linux:
+            val version: String = "26_35"
+            val url: Uri = Uri.unsafeFromString(s"https://github.com/adoptium/temurin26-binaries/releases/download/jdk-${URLEncoder.encode(version.replace('_', '+'), StandardCharsets.UTF_8)}/OpenJDK26U-jdk_x64_linux_hotspot_$version.tar.gz")
+          end linux
+        end x64
+      end jdk
+    end temurin
+  end adoptium
   object sbt:
     // https://github.com/sbt/sbt/releases
     val version: String = gav.sbtScala.version
@@ -31,19 +44,6 @@ package object build:
       val url: Uri = Uri.unsafeFromString(s"https://github.com/fatedier/frp/releases/download/v$version/frp_${version}_linux_amd64.tar.gz")
     end frp
   end fatedier
-  object adoptium:
-    object temurin:
-      // https://github.com/adoptium/temurin26-binaries/releases/
-      object jdk:
-        object x64:
-          object linux:
-            val version: String = "26_35"
-            val url: Uri = Uri.unsafeFromString(s"https://github.com/adoptium/temurin26-binaries/releases/download/jdk-${URLEncoder.encode(version.replace('_', '+'), StandardCharsets.UTF_8)}/OpenJDK26U-jdk_x64_linux_hotspot_$version.tar.gz")
-          end linux
-        end x64
-      end jdk
-    end temurin
-  end adoptium
   object xuxueli:
     object `xxl-job`:
       // https://github.com/xuxueli/xxl-job/releases/
@@ -51,6 +51,14 @@ package object build:
       val tablesXxlJobSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/xuxueli/xxl-job/refs/tags/$version/doc/db/tables_xxl_job.sql")
     end `xxl-job`
   end xuxueli
+  object apolloconfig:
+    object apollo:
+      // https://github.com/apolloconfig/apollo/releases/
+      val version: String = "v2.5.1"
+      val apolloPortalDbSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/apolloconfig/apollo/refs/tags/$version/scripts/sql/profiles/mysql-default/apolloportaldb.sql")
+      val apolloConfigDbSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/apolloconfig/apollo/refs/tags/$version/scripts/sql/profiles/mysql-default/apolloconfigdb.sql")
+    end apollo
+  end apolloconfig
   object mojang:
     object minecraft:
       object java:
