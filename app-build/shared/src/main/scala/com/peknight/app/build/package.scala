@@ -31,7 +31,7 @@ package object build:
     object linux:
       object x64:
         // https://nodejs.org/en/download/current
-        val version: String = "25.8.2"
+        val version: String = "25.9.0"
         val directory: Path = Path(s"node-v$version-linux-x64")
         val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/$directory.tar.xz")
       end x64
@@ -47,7 +47,7 @@ package object build:
   object xuxueli:
     object `xxl-job`:
       // https://github.com/xuxueli/xxl-job/releases/
-      val version: String = "3.3.2"
+      val version: String = "3.4.0"
       val tablesXxlJobSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/xuxueli/xxl-job/refs/tags/$version/doc/db/tables_xxl_job.sql")
     end `xxl-job`
   end xuxueli
@@ -68,7 +68,7 @@ package object build:
       end java
       object bedrock:
         // https://www.minecraft.net/en-us/download/server/bedrock
-        val version: String = "1.26.12.2"
+        val version: String = "1.26.13.1"
         val url: Uri = Uri.unsafeFromString(s"https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-$version.zip")
       end bedrock
     end minecraft
