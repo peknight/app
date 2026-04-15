@@ -40,7 +40,7 @@ package object build:
   object fatedier:
     object frp:
       // https://github.com/fatedier/frp/releases/
-      val version: String = "0.68.0"
+      val version: String = "0.68.1"
       val url: Uri = Uri.unsafeFromString(s"https://github.com/fatedier/frp/releases/download/v$version/frp_${version}_linux_amd64.tar.gz")
     end frp
   end fatedier
@@ -63,12 +63,12 @@ package object build:
     object minecraft:
       object java:
         // https://www.minecraft.net/en-us/download/server
-        val version: String = "26.1.1"
-        val url: Uri = uri"https://piston-data.mojang.com/v1/objects/49c8195703ad0ba4f0a4efbccfd85a4a8ca57431/server.jar"
+        val version: String = "26.1.2"
+        val url: Uri = uri"https://piston-data.mojang.com/v1/objects/97ccd4c0ed3f81bbb7bfacddd1090b0c56f9bc51/server.jar"
       end java
       object bedrock:
         // https://www.minecraft.net/en-us/download/server/bedrock
-        val version: String = "1.26.13.1"
+        val version: String = "1.26.14.1"
         val url: Uri = Uri.unsafeFromString(s"https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-$version.zip")
       end bedrock
     end minecraft
