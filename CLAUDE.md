@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 模块概述
 
-`app` 模块定义应用层抽象及第三方应用的版本依赖信息。
+`app` 模块定义应用层抽象及第三方应用的版本依赖信息，属于 `peknight` 单体仓库的 **层级 3 — 安全与 API**。收口定义应用的基本信息数据结构，以及维护个人项目所依赖的非标准第三方应用的版本号等。
 
 ## 子模块结构
 
