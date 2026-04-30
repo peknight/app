@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets
 package object build:
   object adoptium:
     object temurin:
-      // https://github.com/adoptium/temurin26-binaries/releases/
+      /** @versionCheck https://api.adoptium.net/v3/info/available_releases */
       object jdk:
         object x64:
           object linux:
@@ -23,14 +23,14 @@ package object build:
     end temurin
   end adoptium
   object sbt:
-    // https://github.com/sbt/sbt/releases
+    // @versionCheck https://repo.maven.apache.org/maven2/org/scala-sbt/sbt/
     val version: String = gav.sbtScala.version
     val url: Uri = Uri.unsafeFromString(s"https://github.com/sbt/sbt/releases/download/v$version/sbt-$version.tgz")
   end sbt
   object node:
+    /** @versionCheck https://nodejs.org/dist/index.json */
     object linux:
       object x64:
-        // https://nodejs.org/en/download/current
         val version: String = "25.9.0"
         val directory: Path = Path(s"node-v$version-linux-x64")
         val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/$directory.tar.xz")
@@ -38,36 +38,35 @@ package object build:
     end linux
   end node
   object fatedier:
+    /** @versionCheck https://api.github.com/repos/fatedier/frp/releases/latest */
     object frp:
-      // https://github.com/fatedier/frp/releases/
       val version: String = "0.68.1"
       val url: Uri = Uri.unsafeFromString(s"https://github.com/fatedier/frp/releases/download/v$version/frp_${version}_linux_amd64.tar.gz")
     end frp
   end fatedier
   object xuxueli:
+    /** @versionCheck https://api.github.com/repos/xuxueli/xxl-job/releases/latest */
     object `xxl-job`:
-      // https://github.com/xuxueli/xxl-job/releases/
       val version: String = "3.4.0"
       val tablesXxlJobSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/xuxueli/xxl-job/refs/tags/$version/doc/db/tables_xxl_job.sql")
     end `xxl-job`
   end xuxueli
   object apolloconfig:
+    /** @versionCheck https://api.github.com/repos/apolloconfig/apollo/releases/latest */
     object apollo:
-      // https://github.com/apolloconfig/apollo/releases/
       val version: String = "2.5.1"
       val apolloPortalDbSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/apolloconfig/apollo/refs/tags/v$version/scripts/sql/profiles/mysql-default/apolloportaldb.sql")
       val apolloConfigDbSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/apolloconfig/apollo/refs/tags/v$version/scripts/sql/profiles/mysql-default/apolloconfigdb.sql")
     end apollo
   end apolloconfig
   object mojang:
+    /** @versionCheck https://launchermeta.mojang.com/mc/game/version_manifest.json */
     object minecraft:
       object java:
-        // https://www.minecraft.net/en-us/download/server
         val version: String = "26.1.2"
         val url: Uri = uri"https://piston-data.mojang.com/v1/objects/97ccd4c0ed3f81bbb7bfacddd1090b0c56f9bc51/server.jar"
       end java
       object bedrock:
-        // https://www.minecraft.net/en-us/download/server/bedrock
         val version: String = "1.26.14.1"
         val url: Uri = Uri.unsafeFromString(s"https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-$version.zip")
       end bedrock
