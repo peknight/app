@@ -373,7 +373,7 @@ def update_github_release(repo_root: Path, apply: bool, owner: str, repo: str, d
     return results
 
 
-# === Minecraft（Java / Bedrock）===
+# === Minecraft Java ===
 
 def _query_mojang_latest() -> tuple[str | None, str | None]:
     """查询 Minecraft Java 最新版本，返回 (version_id, server_url)。"""
@@ -385,7 +385,6 @@ def _query_mojang_latest() -> tuple[str | None, str | None]:
     if not latest_release:
         return None, None
 
-    # 获取 Java 版详情
     versions = data.get("versions", [])
     for v in versions:
         if v.get("id") == latest_release:
@@ -398,6 +397,72 @@ def _query_mojang_latest() -> tuple[str | None, str | None]:
 
     return latest_release, None
 
+
+def update_minecraft_java(repo_root: Path, apply: bool) -> list[dict]:
+    """更新 Minecraft Java 的版本号和 URL。"""
+    results = []
+    filepath = repo_root / PACKAGE_PATH
+    if not filepath.exists():
+        return results
+
+    content = filepath.read_text()
+    lines = content.splitlines()
+    modified = False
+
+    i = 0
+    while i < len(lines):
+        url_match = ANCHOR_RE.search(lines[i])
+        if not url_match:
+            i += 1
+            continue
+
+        url = url_match.group(1)
+        if "launchermeta.mojang.com" not in url:
+            i += 1
+            continue
+
+        # 在锚点下方找 version 和 url
+        version_info = _find_version_def_after_comment(lines, i + 1)
+        if not version_info:
+            i += 1
+            continue
+
+        ver_line_idx, current_version = version_info
+        url_info = _find_url_def_after_comment(lines, ver_line_idx + 1)
+        url_line_idx = url_info[0] if url_info else None
+
+        latest_ver, latest_url = _query_mojang_latest()
+        if latest_ver is None or not _is_version_newer(current_version, latest_ver):
+            results.append({"name": "mojang.minecraft.java", "status": "skipped", "reason": f"已是最新 ({current_version})"})
+            i += 1
+            continue
+
+        old_line = lines[ver_line_idx]
+        lines[ver_line_idx] = old_line.replace(current_version, latest_ver, 1)
+        modified = True
+
+        # 更新 Java URL（固定 hash URL）
+        if latest_url and url_line_idx is not None:
+            old_url_match = re.search(r'/objects/([a-f0-9]+)/server\.jar"', lines[url_line_idx])
+            new_hash_match = re.search(r'/objects/([a-f0-9]+)/server\.jar"', latest_url)
+            if old_url_match and new_hash_match:
+                lines[url_line_idx] = lines[url_line_idx].replace(old_url_match.group(1), new_hash_match.group(1), 1)
+
+        results.append({
+            "name": "mojang.minecraft.java",
+            "status": "updated",
+            "old": current_version,
+            "new": latest_ver,
+        })
+        i += 1
+
+    if modified and apply:
+        filepath.write_text("\n".join(lines) + "\n")
+
+    return results
+
+
+# === Minecraft Bedrock ===
 
 def _query_mojang_bedrock() -> str | None:
     """查询 Minecraft Bedrock Dedicated Server 最新版本。
@@ -413,11 +478,9 @@ def _query_mojang_bedrock() -> str | None:
     release = data.get("release", {})
     if not release:
         return None
-    # 取版本号最大的版本
     version_keys = list(release.keys())
     version_keys.sort(key=_parse_version_tuple, reverse=True)
     latest_key = version_keys[0]
-    # 从 URL 中提取完整版本号：bedrock-server-X.Y.Z.W.zip
     linux_url = release[latest_key].get("linux", {}).get("url", "")
     m = re.search(r"bedrock-server-([0-9.]+)\.zip", linux_url)
     if m:
@@ -425,8 +488,8 @@ def _query_mojang_bedrock() -> str | None:
     return latest_key
 
 
-def update_minecraft(repo_root: Path, apply: bool) -> list[dict]:
-    """更新 Minecraft Java 和 Bedrock 的版本号和 URL。"""
+def update_minecraft_bedrock(repo_root: Path, apply: bool) -> list[dict]:
+    """更新 Minecraft Bedrock 的版本号。"""
     results = []
     filepath = repo_root / PACKAGE_PATH
     if not filepath.exists():
@@ -436,98 +499,42 @@ def update_minecraft(repo_root: Path, apply: bool) -> list[dict]:
     lines = content.splitlines()
     modified = False
 
-    # 定位锚点
-    mojang_idx = None
-    for i, line in enumerate(lines):
-        url_match = ANCHOR_RE.search(line)
-        if url_match and "launchermeta.mojang.com" in url_match.group(1):
-            mojang_idx = i
-            break
+    i = 0
+    while i < len(lines):
+        url_match = ANCHOR_RE.search(lines[i])
+        if not url_match:
+            i += 1
+            continue
 
-    if mojang_idx is None:
-        results.append({"name": "mojang.minecraft", "status": "error", "reason": "未找到锚点"})
-        return results
+        url = url_match.group(1)
+        if "bedrock-server-downloads" not in url:
+            i += 1
+            continue
 
-    # 查找 java 和 bedrock 的版本定义
-    java_ver_line = None
-    java_current = None
-    java_url_line = None
-    bedrock_ver_line = None
-    bedrock_current = None
+        version_info = _find_version_def_after_comment(lines, i + 1)
+        if not version_info:
+            i += 1
+            continue
 
-    j = mojang_idx + 1
-    while j < len(lines) and "end mojang" not in lines[j]:
-        if "object java" in lines[j]:
-            # 在 java object 块内查找 version 和 url
-            for k in range(j + 1, min(j + 6, len(lines))):
-                if "end java" in lines[k]:
-                    break
-                vm = VAL_VERSION_RE.search(lines[k])
-                if vm and java_ver_line is None:
-                    java_ver_line = k
-                    java_current = vm.group(2)
-                um = VAL_URL_RE.search(lines[k])
-                if um and java_url_line is None:
-                    java_url_line = k
-        if "object bedrock" in lines[j]:
-            for k in range(j + 1, min(j + 6, len(lines))):
-                if "end bedrock" in lines[k]:
-                    break
-                vm = VAL_VERSION_RE.search(lines[k])
-                if vm and bedrock_ver_line is None:
-                    bedrock_ver_line = k
-                    bedrock_current = vm.group(2)
-        j += 1
+        ver_line_idx, current_version = version_info
 
-    # 查询最新版本
-    latest_java_ver, latest_java_url = _query_mojang_latest()
-    latest_bedrock = _query_mojang_bedrock()
+        latest = _query_mojang_bedrock()
+        if latest is None or not _is_version_newer(current_version, latest):
+            results.append({"name": "mojang.minecraft.bedrock", "status": "skipped", "reason": f"已是最新 ({current_version})"})
+            i += 1
+            continue
 
-    # 更新 Java 版
-    if java_ver_line and java_current and latest_java_ver:
-        if _is_version_newer(java_current, latest_java_ver):
-            old_line = lines[java_ver_line]
-            lines[java_ver_line] = old_line.replace(java_current, latest_java_ver, 1)
+        old_line = lines[ver_line_idx]
+        lines[ver_line_idx] = old_line.replace(current_version, latest, 1)
+        modified = True
 
-            # 更新 Java URL（固定 hash URL）
-            if latest_java_url and java_url_line is not None:
-                old_url_match = re.search(r'/objects/([a-f0-9]+)/server\.jar"', lines[java_url_line])
-                if old_url_match:
-                    new_hash_match = re.search(r'/objects/([a-f0-9]+)/server\.jar"', latest_java_url)
-                    if new_hash_match:
-                        old_hash = old_url_match.group(1)
-                        new_hash = new_hash_match.group(1)
-                        lines[java_url_line] = lines[java_url_line].replace(old_hash, new_hash, 1)
-                        modified = True
-
-            modified = True
-            results.append({
-                "name": "mojang.minecraft.java",
-                "status": "updated",
-                "old": java_current,
-                "new": latest_java_ver,
-            })
-        else:
-            results.append({"name": "mojang.minecraft.java", "status": "skipped", "reason": f"已是最新 ({java_current})"})
-    else:
-        results.append({"name": "mojang.minecraft.java", "status": "error", "reason": "未找到版本信息"})
-
-    # 更新 Bedrock 版
-    if bedrock_ver_line and bedrock_current and latest_bedrock:
-        if _is_version_newer(bedrock_current, latest_bedrock):
-            old_line = lines[bedrock_ver_line]
-            lines[bedrock_ver_line] = old_line.replace(bedrock_current, latest_bedrock, 1)
-            modified = True
-            results.append({
-                "name": "mojang.minecraft.bedrock",
-                "status": "updated",
-                "old": bedrock_current,
-                "new": latest_bedrock,
-            })
-        else:
-            results.append({"name": "mojang.minecraft.bedrock", "status": "skipped", "reason": f"已是最新 ({bedrock_current})"})
-    else:
-        results.append({"name": "mojang.minecraft.bedrock", "status": "error", "reason": "未找到版本信息"})
+        results.append({
+            "name": "mojang.minecraft.bedrock",
+            "status": "updated",
+            "old": current_version,
+            "new": latest,
+        })
+        i += 1
 
     if modified and apply:
         filepath.write_text("\n".join(lines) + "\n")
@@ -581,7 +588,8 @@ def main():
     results += update_github_release(repo_root, args.apply, "fatedier", "frp", "fatedier.frp")
     results += update_github_release(repo_root, args.apply, "xuxueli", "xxl-job", "xuxueli.xxl-job")
     results += update_github_release(repo_root, args.apply, "apolloconfig", "apollo", "apolloconfig.apollo")
-    results += update_minecraft(repo_root, args.apply)
+    results += update_minecraft_java(repo_root, args.apply)
+    results += update_minecraft_bedrock(repo_root, args.apply)
 
     print_results(results)
 

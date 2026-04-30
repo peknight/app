@@ -60,12 +60,13 @@ package object build:
     end apollo
   end apolloconfig
   object mojang:
-    /** @versionCheck https://launchermeta.mojang.com/mc/game/version_manifest.json */
     object minecraft:
+      /** @versionCheck https://launchermeta.mojang.com/mc/game/version_manifest.json */
       object java:
         val version: String = "26.1.2"
         val url: Uri = uri"https://piston-data.mojang.com/v1/objects/97ccd4c0ed3f81bbb7bfacddd1090b0c56f9bc51/server.jar"
       end java
+      /** @versionCheck https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/main/bedrock-server-downloads.json */
       object bedrock:
         val version: String = "1.26.14.1"
         val url: Uri = Uri.unsafeFromString(s"https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-$version.zip")
