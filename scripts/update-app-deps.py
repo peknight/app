@@ -15,7 +15,9 @@ from pathlib import Path
 
 # Adoptium Temurin API
 API_ADOPTIUM_RELEASES = "https://api.adoptium.net/v3/info/available_releases"
-API_ADOPTIUM_LATEST = "https://api.adoptium.net/v3/assets/latest/{feature_version}/hotspot?architecture=x64&os=linux&image_type=jdk&project=jdk&vendor=adoptium"
+# Adoptium /latest/{feature}/hotspot 端点只返回原始 GA 版本，不包含后续季度更新。
+# 改用 GitHub releases API 获取最新 release。
+API_ADOPTIUM_RELEASES_GH = "https://api.github.com/repos/adoptium/temurin{feature_version}-binaries/releases?per_page=1"
 
 # Node.js 官方 JSON
 API_NODEJS = "https://nodejs.org/dist/index.json"
@@ -60,7 +62,11 @@ def _fetch_json(url: str, timeout: int = 15) -> dict | list | None:
 
 
 def _parse_version_tuple(version: str) -> tuple:
-    """将版本号字符串解析为可比较的 tuple。"""
+    """将版本号字符串解析为可比较的 tuple。
+
+    支持 `1.26.14.1`、`0.68.1`、`25.9.0` 等格式。
+    Adoptium 格式（如 26_35、26.0.1_8）使用 _is_adoptium_newer 比较。
+    """
     parts = []
     for p in version.split("."):
         try:
@@ -74,6 +80,25 @@ def _parse_version_tuple(version: str) -> tuple:
                     break
             parts.append(int(num) if num else 0)
     return tuple(parts)
+
+
+def _is_adoptium_newer(current: str, candidate: str) -> bool:
+    """比较 Adoptium 版本。
+
+    格式：XX_YY（原始 GA，如 26_35）或 XX.Y.Z_YY（季度更新，如 26.0.1_8）。
+    先比较主版本号，再比较小数版本号，最后比较 build 号。
+    """
+    def _normalize(v: str) -> tuple:
+        if "_" not in v:
+            return _parse_version_tuple(v) + (0,)
+        main, build = v.rsplit("_", 1)
+        parts = _parse_version_tuple(main)
+        # 补齐到至少 (major, minor, security) 三位 + build
+        while len(parts) < 3:
+            parts = parts + (0,)
+        return parts + (int(build),)
+
+    return _normalize(candidate) > _normalize(current)
 
 
 def _is_version_newer(current: str, candidate: str) -> bool:
@@ -122,9 +147,10 @@ def _find_directory_line(lines: list[str], start: int) -> int | None:
 # === Adoptium Temurin JDK ===
 
 def _query_adoptium_latest() -> str | None:
-    """查询 Adoptium Temurin 最新版本，返回 XX_YY 格式。
+    """查询 Adoptium Temurin 最新版本，返回 XX_YY 或 XX.Y.Z_YY 格式。
 
-    先检查是否有更新的大版本，再获取对应小版本。
+    先检查是否有更新的大版本，再通过 GitHub releases API 获取最新季度更新。
+    返回格式与下载文件名一致：26_35 或 26.0.1_8。
     """
     data = _fetch_json(API_ADOPTIUM_RELEASES)
     if data is None:
@@ -138,20 +164,42 @@ def _query_adoptium_latest() -> str | None:
 
 
 def _query_adoptium_for_major(feature_version: int) -> str | None:
-    """查询指定大版本的最新小版本，返回 XX_YY 格式。"""
-    url = API_ADOPTIUM_LATEST.format(feature_version=feature_version)
+    """通过 GitHub releases API 查询指定大版本的最新 release。
+
+    返回格式与 package.scala 中的 val version 一致：
+    - jdk-26+35 → 26_35（原始 GA）
+    - jdk-26.0.1+8 → 26.0.1_8（季度更新）
+    """
+    url = API_ADOPTIUM_RELEASES_GH.format(feature_version=feature_version)
     data = _fetch_json(url, timeout=20)
     if data is None or not isinstance(data, list) or len(data) == 0:
         return None
 
     release = data[0]
-    release_name = release.get("release_name", "")  # e.g. "jdk-26+35"
-    m = re.match(r"jdk-(\d+)\+(\d+)", release_name)
+    tag_name = release.get("tag_name", "")  # e.g. "jdk-26.0.1+8"
+    # 从 release notes 或 aqavit 链接中推断版本号格式（文件名中的格式）
+    # 例如：OpenJDK26U-jdk_x64_linux_hotspot_26.0.1_8.tar.gz
+    assets = release.get("assets", [])
+    for asset in assets:
+        name = asset.get("name", "")
+        # 匹配 hotspot_XX_YY 或 hotspot_XX.Y.Z_YY 格式
+        m = re.search(r"hotspot_([0-9.]+_\d+)\.tar\.gz", name)
+        if m:
+            return m.group(1)
+    # fallback: 从 tag_name 解析
+    return _adoptium_tag_to_version(tag_name)
+
+
+def _adoptium_tag_to_version(tag: str) -> str | None:
+    """将 Adoptium release tag 转换为版本字符串（fallback）。
+
+    - jdk-26+35 → 26_35
+    - jdk-26.0.1+8 → 26.0.1_8
+    """
+    m = re.match(r"jdk-([0-9.]+)\+(\d+)", tag)
     if not m:
         return None
-    major = int(m.group(1))
-    patch = int(m.group(2))
-    return f"{major}_{patch}"
+    return f"{m.group(1)}_{m.group(2)}"
 
 
 def update_adoptium(repo_root: Path, apply: bool) -> list[dict]:
@@ -190,7 +238,7 @@ def update_adoptium(repo_root: Path, apply: bool) -> list[dict]:
         version_line_idx, current_version = version_info
 
         latest = _query_adoptium_latest()
-        if latest is None or not _is_version_newer(current_version, latest):
+        if latest is None or not _is_adoptium_newer(current_version, latest):
             results.append({"name": "adoptium.temurin.jdk", "status": "skipped", "reason": f"已是最新 ({current_version})"})
             i += 1
             continue
