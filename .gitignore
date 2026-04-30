@@ -1,5 +1,7 @@
 build.properties
 
+__pycache__/
+
 .bloop/
 .metals/
 metals.sbt
