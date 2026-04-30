@@ -15,7 +15,7 @@ package object build:
       object jdk:
         object x64:
           object linux:
-            val version: String = "26_35"
+            val version: String = "26.0.1_8"
             val url: Uri = Uri.unsafeFromString(s"https://github.com/adoptium/temurin26-binaries/releases/download/jdk-${URLEncoder.encode(version.replace('_', '+'), StandardCharsets.UTF_8)}/OpenJDK26U-jdk_x64_linux_hotspot_$version.tar.gz")
           end linux
         end x64
