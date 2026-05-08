@@ -31,7 +31,7 @@ package object build:
     /** @versionCheck https://nodejs.org/dist/index.json */
     object linux:
       object x64:
-        val version: String = "26.0.0"
+        val version: String = "26.1.0"
         val directory: Path = Path(s"node-v$version-linux-x64")
         val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/$directory.tar.xz")
       end x64
