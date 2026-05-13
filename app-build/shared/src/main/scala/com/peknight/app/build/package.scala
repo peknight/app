@@ -48,7 +48,7 @@ package object build:
     /** @versionCheck https://api.github.com/repos/xuxueli/xxl-job/releases/latest */
     object `xxl-job`:
       val version: String = "3.4.0"
-      val tablesXxlJobSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/xuxueli/xxl-job/refs/tags/$version/doc/db/tables_xxl_job.sql")
+      val tablesXxlJobSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/xuxueli/xxl-job/refs/tags/v$version/doc/db/tables_xxl_job.sql")
     end `xxl-job`
   end xuxueli
   object apolloconfig:
