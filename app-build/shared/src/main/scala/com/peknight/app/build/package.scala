@@ -31,7 +31,7 @@ package object build:
     /** @versionCheck https://nodejs.org/dist/index.json */
     object linux:
       object x64:
-        val version: String = "26.1.0"
+        val version: String = "26.2.0"
         val directory: Path = Path(s"node-v$version-linux-x64")
         val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/$directory.tar.xz")
       end x64
@@ -40,7 +40,7 @@ package object build:
   object fatedier:
     /** @versionCheck https://api.github.com/repos/fatedier/frp/releases/latest */
     object frp:
-      val version: String = "0.68.1"
+      val version: String = "0.69.0"
       val url: Uri = Uri.unsafeFromString(s"https://github.com/fatedier/frp/releases/download/v$version/frp_${version}_linux_amd64.tar.gz")
     end frp
   end fatedier
@@ -68,7 +68,7 @@ package object build:
       end java
       /** @versionCheck https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/main/bedrock-server-downloads.json */
       object bedrock:
-        val version: String = "1.26.21.1"
+        val version: String = "1.26.23.1"
         val url: Uri = Uri.unsafeFromString(s"https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-$version.zip")
       end bedrock
     end minecraft
