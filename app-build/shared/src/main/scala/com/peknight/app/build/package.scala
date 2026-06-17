@@ -47,7 +47,7 @@ package object build:
   object xuxueli:
     /** @versionCheck https://api.github.com/repos/xuxueli/xxl-job/releases/latest */
     object `xxl-job`:
-      val version: String = "3.4.0"
+      val version: String = "3.4.1"
       val tablesXxlJobSql: Uri = Uri.unsafeFromString(s"https://raw.githubusercontent.com/xuxueli/xxl-job/refs/tags/v$version/doc/db/tables_xxl_job.sql")
     end `xxl-job`
   end xuxueli
@@ -63,7 +63,7 @@ package object build:
     object minecraft:
       /** @versionCheck https://launchermeta.mojang.com/mc/game/version_manifest.json */
       object java:
-        val version: String = "26.1.2"
+        val version: String = "26.2"
         val url: Uri = uri"https://piston-data.mojang.com/v1/objects/97ccd4c0ed3f81bbb7bfacddd1090b0c56f9bc51/server.jar"
       end java
       /** @versionCheck https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/main/bedrock-server-downloads.json */
