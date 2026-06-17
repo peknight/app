@@ -39,6 +39,7 @@ EOF
 ## 注意事项
 
 - 脚本位于 `scripts/update-app-deps.py`，使用纯 Python 标准库，零外部依赖
-- 更新范围：`app-build/package.scala`
+- 更新范围：`app-build/package.scala` 中所有带 `/** @versionCheck ... */` 锚点的依赖
+- 跳过范围：带 `/** @skipVersionCheck ... */` 锚点的依赖（如 sbt 版本由 build 模块统一管理）
 - 不要手动修改版本号，统一通过脚本执行
 - GitHub API 可通过环境变量 `GITHUB_TOKEN` 传入认证 token 提升限频

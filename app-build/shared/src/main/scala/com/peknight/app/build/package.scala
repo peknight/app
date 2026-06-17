@@ -23,7 +23,7 @@ package object build:
     end temurin
   end adoptium
   object sbt:
-    // @versionCheck https://repo.maven.apache.org/maven2/org/scala-sbt/sbt/
+    /** @skipVersionCheck https://repo.maven.apache.org/maven2/org/scala-sbt/sbt/ (version from build module) */
     val version: String = gav.sbtScala.version
     val url: Uri = Uri.unsafeFromString(s"https://github.com/sbt/sbt/releases/download/v$version/sbt-$version.tgz")
   end sbt

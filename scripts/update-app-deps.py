@@ -33,14 +33,14 @@ API_MOJANG_MANIFEST = "https://launchermeta.mojang.com/mc/game/version_manifest.
 # /** @versionCheck <URL> */ 块注释
 ANCHOR_RE = re.compile(r"/\*\*\s*@versionCheck\s*(https?://[^\s]+)\s*\*/")
 
+# /** @skipVersionCheck <URL> */ 块注释（URL 后可选附加说明）
+SKIP_RE = re.compile(r"/\*\*\s*@skipVersionCheck\s+(https?://[^\s]+).*\*/")
+
 # val version: String = "x.y.z"
 VAL_VERSION_RE = re.compile(r'(val\s+version\s*:\s*String\s*=\s*")([^"]+)(")')
 
 # val url: Uri = Uri.unsafeFromString(s"...") 或 val url: Uri = uri"..."
 VAL_URL_RE = re.compile(r'(val\s+url\s*:\s*Uri\s*=\s*)(.+)')
-
-# 排除列表
-EXCLUDE_NAMES = {"sbt"}
 
 # 目标文件路径
 PACKAGE_PATH = Path("app-build") / "shared" / "src" / "main" / "scala" / "com" / "peknight" / "app" / "build" / "package.scala"
@@ -144,6 +144,26 @@ def _find_directory_line(lines: list[str], start: int) -> int | None:
     return None
 
 
+def scan_skip_entries(repo_root: Path) -> list[dict]:
+    """扫描所有 @skipVersionCheck 条目并报告为跳过。"""
+    results = []
+    filepath = repo_root / PACKAGE_PATH
+    if not filepath.exists():
+        return results
+
+    content = filepath.read_text()
+    lines = content.splitlines()
+
+    for i, line in enumerate(lines):
+        skip_match = SKIP_RE.search(line)
+        if skip_match:
+            object_name = _find_object_name_before_comment(lines, i)
+            if object_name:
+                results.append({"name": object_name, "status": "skipped", "reason": "@skipVersionCheck"})
+
+    return results
+
+
 # === Adoptium Temurin JDK ===
 
 def _query_adoptium_latest() -> str | None:
@@ -220,13 +240,21 @@ def update_adoptium(repo_root: Path, apply: bool) -> list[dict]:
             i += 1
             continue
 
+        # 检查是否为 skip 标记
+        if SKIP_RE.search(lines[i]):
+            object_name = _find_object_name_before_comment(lines, i)
+            if object_name:
+                results.append({"name": object_name, "status": "skipped", "reason": "@skipVersionCheck"})
+            i += 1
+            continue
+
         url = url_match.group(1)
         if "api.adoptium.net" not in url:
             i += 1
             continue
 
         object_name = _find_object_name_before_comment(lines, i)
-        if not object_name or object_name in EXCLUDE_NAMES:
+        if not object_name:
             i += 1
             continue
 
@@ -294,13 +322,21 @@ def update_nodejs(repo_root: Path, apply: bool) -> list[dict]:
             i += 1
             continue
 
+        # 检查是否为 skip 标记
+        if SKIP_RE.search(lines[i]):
+            object_name = _find_object_name_before_comment(lines, i)
+            if object_name:
+                results.append({"name": object_name, "status": "skipped", "reason": "@skipVersionCheck"})
+            i += 1
+            continue
+
         url = url_match.group(1)
         if "nodejs.org/dist" not in url:
             i += 1
             continue
 
         object_name = _find_object_name_before_comment(lines, i)
-        if not object_name or object_name in EXCLUDE_NAMES:
+        if not object_name:
             i += 1
             continue
 
@@ -380,13 +416,21 @@ def update_github_release(repo_root: Path, apply: bool, owner: str, repo: str, d
             i += 1
             continue
 
+        # 检查是否为 skip 标记
+        if SKIP_RE.search(lines[i]):
+            object_name = _find_object_name_before_comment(lines, i)
+            if object_name:
+                results.append({"name": display_name, "status": "skipped", "reason": "@skipVersionCheck"})
+            i += 1
+            continue
+
         url = url_match.group(1)
         if github_anchor not in url:
             i += 1
             continue
 
         object_name = _find_object_name_before_comment(lines, i)
-        if not object_name or object_name in EXCLUDE_NAMES:
+        if not object_name:
             i += 1
             continue
 
@@ -461,6 +505,12 @@ def update_minecraft_java(repo_root: Path, apply: bool) -> list[dict]:
     while i < len(lines):
         url_match = ANCHOR_RE.search(lines[i])
         if not url_match:
+            i += 1
+            continue
+
+        # 检查是否为 skip 标记
+        if SKIP_RE.search(lines[i]):
+            results.append({"name": "mojang.minecraft.java", "status": "skipped", "reason": "@skipVersionCheck"})
             i += 1
             continue
 
@@ -554,6 +604,12 @@ def update_minecraft_bedrock(repo_root: Path, apply: bool) -> list[dict]:
             i += 1
             continue
 
+        # 检查是否为 skip 标记
+        if SKIP_RE.search(lines[i]):
+            results.append({"name": "mojang.minecraft.bedrock", "status": "skipped", "reason": "@skipVersionCheck"})
+            i += 1
+            continue
+
         url = url_match.group(1)
         if "bedrock-server-downloads" not in url:
             i += 1
@@ -616,11 +672,7 @@ def print_results(results):
 def main():
     parser = argparse.ArgumentParser(description="自动更新 app-build 模块第三方应用版本号")
     parser.add_argument("--apply", action="store_true", help="实际写入文件（默认仅 dry-run）")
-    parser.add_argument("--skip", nargs="*", default=[], metavar="NAME",
-                        help="临时跳过指定依赖的更新（object 名称）")
     args = parser.parse_args()
-
-    EXCLUDE_NAMES.update(args.skip)
 
     repo_root = Path(__file__).resolve().parent.parent
 
@@ -631,6 +683,7 @@ def main():
     print()
 
     results = []
+    results += scan_skip_entries(repo_root)
     results += update_adoptium(repo_root, args.apply)
     results += update_nodejs(repo_root, args.apply)
     results += update_github_release(repo_root, args.apply, "fatedier", "frp", "fatedier.frp")
