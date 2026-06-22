@@ -8,13 +8,15 @@ lazy val app = (project in file("."))
   .aggregate(
     appCore.jvm,
     appCore.js,
-    appCore.native,
     appBuild.jvm,
     appBuild.js,
   )
 
-lazy val appCore = (crossProject(JVMPlatform, JSPlatform, NativePlatform) in file("app-core"))
+lazy val appCore = (crossProject(JVMPlatform, JSPlatform) in file("app-core"))
   .settings(name := "app-core")
+  .settings(crossDependencies(
+    peknight.codec,
+  ))
 
 lazy val appBuild = (crossProject(JVMPlatform, JSPlatform) in file("app-build"))
   .settings(name := "app-build")
