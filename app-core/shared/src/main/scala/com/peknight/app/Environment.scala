@@ -1,7 +1,7 @@
 package com.peknight.app
 
-import cats.Applicative
 import cats.syntax.eq.*
+import cats.{Applicative, Show}
 import com.peknight.codec.Codec
 import com.peknight.codec.cursor.Cursor
 import com.peknight.codec.sum.StringType
@@ -17,6 +17,6 @@ object Environment:
     Codec.mapOption[F, String, String, Environment](_.toString)(t =>
       Environment.values.find(e => e.toString === t || e.slug === t)
     )
-  given codecEnvironmentS[F[_]: Applicative, S: StringType]: Codec[F, S, Cursor[S], Environment] =
+  given codecEnvironmentS[F[_]: Applicative, S: {StringType, Show}]: Codec[F, S, Cursor[S], Environment] =
     Codec.codecS[F, S, Environment]
 end Environment
