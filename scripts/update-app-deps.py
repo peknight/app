@@ -42,8 +42,8 @@ VAL_VERSION_RE = re.compile(r'(val\s+version\s*:\s*String\s*=\s*")([^"]+)(")')
 # val url: Uri = Uri.unsafeFromString(s"...") 或 val url: Uri = uri"..."
 VAL_URL_RE = re.compile(r'(val\s+url\s*:\s*Uri\s*=\s*)(.+)')
 
-# 目标文件路径
-PACKAGE_PATH = Path("app-build") / "shared" / "src" / "main" / "scala" / "com" / "peknight" / "app" / "build" / "package.scala"
+# 目标文件路径（sbt 2.0 projectMatrix 结构，无 shared 目录）
+PACKAGE_PATH = Path("app-build") / "src" / "main" / "scala" / "com" / "peknight" / "app" / "build" / "package.scala"
 
 
 def _fetch_json(url: str, timeout: int = 15) -> dict | list | None:
