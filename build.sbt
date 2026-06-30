@@ -3,8 +3,9 @@ import com.peknight.build.sbt.*
 
 commonSettings
 
-lazy val app = (project in file("."))
+lazy val app = rootProject
   .settings(name := "app")
+  .settings(publish / skip := true)
   .aggregate(appCore.projectRefs *)
   .aggregate(appBuild.projectRefs *)
 
