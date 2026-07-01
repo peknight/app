@@ -491,7 +491,15 @@ def _query_mojang_latest() -> tuple[str | None, str | None]:
 
 
 def update_minecraft_java(repo_root: Path, apply: bool) -> list[dict]:
-    """更新 Minecraft Java 的版本号和 URL。"""
+    """更新 Minecraft Java 的版本号和 URL。
+
+    定制逻辑：server.jar 下载 URL 内嵌 sha1 hash（形如 `/objects/<sha1>/server.jar`），
+    版本号无法反映内容变化。为避免手写 hash 出错或 Mojang 重发同版本 jar 时脚本
+    漏更新，URL 独立于 version 单独校验：
+    - version 变了 → 更新 version
+    - manifest 返回的 URL hash 与当前不一致 → 更新 URL hash
+    - 两者都不变 → 跳过
+    """
     results = []
     filepath = repo_root / PACKAGE_PATH
     if not filepath.exists():
@@ -530,28 +538,52 @@ def update_minecraft_java(repo_root: Path, apply: bool) -> list[dict]:
         url_line_idx = url_info[0] if url_info else None
 
         latest_ver, latest_url = _query_mojang_latest()
-        if latest_ver is None or not _is_version_newer(current_version, latest_ver):
+        if latest_ver is None:
+            results.append({"name": "mojang.minecraft.java", "status": "error", "reason": "无法获取 manifest"})
+            i += 1
+            continue
+
+        version_newer = _is_version_newer(current_version, latest_ver)
+
+        # 独立比较 URL hash：即便版本未变，也要与 manifest 保持一致
+        current_hash = None
+        latest_hash = None
+        if url_line_idx is not None:
+            m = re.search(r'/objects/([a-f0-9]+)/server\.jar', lines[url_line_idx])
+            if m:
+                current_hash = m.group(1)
+        if latest_url:
+            m = re.search(r'/objects/([a-f0-9]+)/server\.jar', latest_url)
+            if m:
+                latest_hash = m.group(1)
+        url_changed = bool(current_hash and latest_hash and current_hash != latest_hash)
+
+        if not version_newer and not url_changed:
             results.append({"name": "mojang.minecraft.java", "status": "skipped", "reason": f"已是最新 ({current_version})"})
             i += 1
             continue
 
-        old_line = lines[ver_line_idx]
-        lines[ver_line_idx] = old_line.replace(current_version, latest_ver, 1)
-        modified = True
+        if version_newer:
+            lines[ver_line_idx] = lines[ver_line_idx].replace(current_version, latest_ver, 1)
+            modified = True
+            results.append({
+                "name": "mojang.minecraft.java",
+                "status": "updated",
+                "old": current_version,
+                "new": latest_ver,
+            })
 
-        # 更新 Java URL（固定 hash URL）
-        if latest_url and url_line_idx is not None:
-            old_url_match = re.search(r'/objects/([a-f0-9]+)/server\.jar"', lines[url_line_idx])
-            new_hash_match = re.search(r'/objects/([a-f0-9]+)/server\.jar"', latest_url)
-            if old_url_match and new_hash_match:
-                lines[url_line_idx] = lines[url_line_idx].replace(old_url_match.group(1), new_hash_match.group(1), 1)
-
-        results.append({
-            "name": "mojang.minecraft.java",
-            "status": "updated",
-            "old": current_version,
-            "new": latest_ver,
-        })
+        if url_changed and url_line_idx is not None:
+            lines[url_line_idx] = lines[url_line_idx].replace(current_hash, latest_hash, 1)
+            modified = True
+            label = "mojang.minecraft.java" if not version_newer else "mojang.minecraft.java (url)"
+            reason = "URL hash 与 manifest 不一致" if not version_newer else "同步更新 URL"
+            results.append({
+                "name": label,
+                "status": "updated",
+                "old": f"{current_hash[:12]}… ({reason})",
+                "new": f"{latest_hash[:12]}…",
+            })
         i += 1
 
     if modified and apply:

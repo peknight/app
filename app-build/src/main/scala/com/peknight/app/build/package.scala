@@ -64,7 +64,7 @@ package object build:
       /** @versionCheck https://launchermeta.mojang.com/mc/game/version_manifest.json */
       object java:
         val version: String = "26.2"
-        val url: Uri = uri"https://piston-data.mojang.com/v1/objects/97ccd4c0ed3f81bbb7bfacddd1090b0c56f9bc51/server.jar"
+        val url: Uri = uri"https://piston-data.mojang.com/v1/objects/823e2250d24b3ddac457a60c92a6a941943fcd6a/server.jar"
       end java
       /** @versionCheck https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/main/bedrock-server-downloads.json */
       object bedrock:
