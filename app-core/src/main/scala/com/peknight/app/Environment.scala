@@ -6,7 +6,7 @@ import com.peknight.codec.Codec
 import com.peknight.codec.cursor.Cursor
 import com.peknight.codec.sum.StringType
 
-enum Environment(val slug: String):
+enum Environment(val slug: String) derives CanEqual:
   case Production extends Environment("prod")
   case Staging extends Environment("staging")
   case Testing extends Environment("test")
