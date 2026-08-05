@@ -15,7 +15,7 @@ package object build:
       object jdk:
         object x64:
           object linux:
-            val version: String = "26.0.1_8"
+            val version: String = "26.0.2_10"
             val url: Uri = Uri.unsafeFromString(s"https://github.com/adoptium/temurin26-binaries/releases/download/jdk-${URLEncoder.encode(version.replace('_', '+'), StandardCharsets.UTF_8)}/OpenJDK26U-jdk_x64_linux_hotspot_$version.tar.gz")
           end linux
         end x64
@@ -31,7 +31,7 @@ package object build:
     /** @versionCheck https://nodejs.org/dist/index.json */
     object linux:
       object x64:
-        val version: String = "26.5.0"
+        val version: String = "26.6.0"
         val directory: Path = Path(s"node-v$version-linux-x64")
         val url: Uri = Uri.unsafeFromString(s"https://nodejs.org/dist/v$version/$directory.tar.xz")
       end x64
@@ -68,7 +68,7 @@ package object build:
       end java
       /** @versionCheck https://raw.githubusercontent.com/kittizz/bedrock-server-downloads/main/bedrock-server-downloads.json */
       object bedrock:
-        val version: String = "1.26.36.1"
+        val version: String = "1.26.40.8"
         val url: Uri = Uri.unsafeFromString(s"https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-$version.zip")
       end bedrock
     end minecraft
